@@ -1,0 +1,30 @@
+{
+  "canisters": {
+    "dhooks_backend": {
+      "candid": "src/dhooks_backend/dhooks_backend.did",
+      "package": "dhooks_backend",
+      "type": "rust"
+    },
+    "dhooks_frontend": {
+      "dependencies": [
+        "dhooks_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/dhooks_frontend/src/index.html"
+      },
+      "source": [
+        "src/dhooks_frontend/assets",
+        "dist/dhooks_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
