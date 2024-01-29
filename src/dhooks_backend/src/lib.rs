@@ -43,9 +43,23 @@ impl BoundedStorable for Hook {
 
 thread_local! {
     static ICP_HOOK: Rc<Contract> = Rc::new(include_abi!("../abi/icphook.json"));
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
     static HOOKS: RefCell<StableBTreeMap<u64, Hook, Memory>> = RefCell::new(StableBTreeMap::init(MEMORY_MANAGER.with(|mm| mm.borrow().get(MemoryId::new(0)))));
+}
 
+#[ic_cdk::init]
+fn init(timer_interval_secs: u64) {
+    let interval = std::time::Duration::from_secs(timer_interval_secs);
+    ic_cdk::println!("Starting a periodic task with interval {interval:?}");
+    ic_cdk_timers::set_timer_interval(interval, || {
+        COUNTER.with(|counter| counter.fetch_add(1, Ordering::Relaxed));
+    });
+}
+
+#[ic_cdk::post_upgrade]
+fn post_upgrade(timer_interval_secs: u64) {
+    init(timer_interval_secs)
 }
 
 #[ic_cdk::query]
