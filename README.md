@@ -80,3 +80,12 @@ Even canister works automatically once deployed, there are 2 test function for t
 ## **Usage**
 
 After deployment, **`dhooks_backend`** will automatically start performing its tasks based on the provided configuration. There is no additional user interaction required unless you want to update the deployment with new parameters.
+
+## **To Do**
+- [ ]  Add endpoint security
+- [ ]  Setting multiple hooks
+- [ ]  Custom header selection for hooks
+- [ ]  Authorized hook register (only authorized user should register new hooks)
+- [ ]  Customize response size (in bytes)
+- [ ]  Customize cycle use per hook
+- [ ]  Using ethabi crate (ethers_core crate is deprecated)
