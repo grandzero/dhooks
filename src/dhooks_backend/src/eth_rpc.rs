@@ -6,7 +6,7 @@ use ic_cdk::api::management_canister::http_request::{
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 
-use crate::util::{from_hex, to_hex};
+use crate::util::to_hex;
 
 const HTTP_CYCLES: u128 = 100_000_000;
 const MAX_RESPONSE_BYTES: u64 = 2048;
@@ -59,23 +59,14 @@ fn next_id() -> u64 {
     })
 }
 
-fn get_rpc_endpoint(network: &str) -> &'static str {
-    match network {
-        "mainnet" | "ethereum" => "https://cloudflare-eth.com/v1/mainnet",
-        "goerli" => "https://ethereum-goerli.publicnode.com",
-        "sepolia" => "https://rpc.sepolia.org",
-        _ => panic!("Unsupported network: {}", network),
-    }
-}
-
 /// Call an Ethereum smart contract.
 pub async fn call_contract(
-    network: &str,
+    service_url: &str,
     contract_address: String,
     abi: &Contract,
     function_name: &str,
     args: &[Token],
-) -> Vec<Token> {
+) -> Result<String, String> {
     let f = match abi.functions_by_name(function_name).map(|v| &v[..]) {
         Ok([f]) => f,
         Ok(fs) => panic!(
@@ -94,7 +85,6 @@ pub async fn call_contract(
     let data = f
         .encode_input(args)
         .expect("Error while encoding input args");
-    let service_url = get_rpc_endpoint(network).to_string();
     let json_rpc_payload = serde_json::to_string(&JsonRpcRequest {
         id: next_id(),
         jsonrpc: "2.0".to_string(),
@@ -126,7 +116,7 @@ pub async fn call_contract(
         },
     ];
     let request = CanisterHttpRequestArgument {
-        url: service_url,
+        url: service_url.to_owned(),
         max_response_bytes: Some(MAX_RESPONSE_BYTES),
         method: HttpMethod::POST,
         headers: request_headers,
@@ -137,17 +127,14 @@ pub async fn call_contract(
         Ok((r,)) => r,
         Err((r, m)) => panic!("{:?} {:?}", r, m),
     };
-
-    let json: JsonRpcResult =
-        serde_json::from_str(std::str::from_utf8(&result.body).expect("utf8"))
-            .expect("JSON was not well-formatted");
-    if let Some(err) = json.error {
-        panic!("JSON-RPC error code {}: {}", err.code, err.message);
+    if let Ok(res) = String::from_utf8(result.body.clone()) {
+        return Ok(res);
+    } else {
+        return Err("Error occured while reading response".to_string());
     }
-    let result = from_hex(&json.result.expect("Unexpected JSON response")).unwrap();
-    f.decode_output(&result).expect("Error decoding output")
 }
 
+#[ic_cdk::query(name = "transform")]
 pub fn transform(args: TransformArgs) -> HttpResponse {
     HttpResponse {
         status: args.response.status.clone(),

@@ -1,0 +1,1 @@
+dfx deploy dhooks_backend --argument '(60,"https://endpoints.omniatech.io/v1/matic/mumbai/public", "0x077E6925a039B7818Eaf5DbF088F289c445a7E32", "https://putsreq.com/GhNAATx0manjojh9nIOy")'

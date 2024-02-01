@@ -377,6 +377,7 @@ version = "0.1.0"
 dependencies = [
  "candid 0.8.4",
  "ethers-core",
+ "getrandom",
  "hex",
  "ic-cdk 0.10.0",
  "ic-cdk-timers",

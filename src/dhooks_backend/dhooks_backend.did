@@ -1,3 +1,13 @@
-service : {
-    "greet": (text) -> (text) query;
+type Hook = 
+    record {
+        rpc_url: text;
+        contract_address: text;
+        callback_url: text;
+        interval_sec: nat64
+    }
+
+
+service : (nat64, text, text, text) -> {
+    "get_data_from_evm": () -> (text);
+    "get_counter": () -> (nat64);
 }
