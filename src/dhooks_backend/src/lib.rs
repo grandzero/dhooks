@@ -4,7 +4,6 @@ pub use ethers_core::{
     abi::{Contract, Token},
     types::{Address, RecoveryMessage, Signature},
 };
-
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, TransformContext,
 };
@@ -122,8 +121,14 @@ fn init(timer_interval_secs: u64, rpc_url: String, contract_address: String, cal
 
     // Spawn interval
     let interval = std::time::Duration::from_secs(timer_interval_secs);
-    ic_cdk_timers::set_timer_interval(interval, || {
+    ic_cdk_timers::set_timer_interval(interval, timer_callback);
+}
+
+fn timer_callback() {
+    ic_cdk::spawn(async {
         COUNTER.with(|counter| counter.fetch_add(1, Ordering::Relaxed));
+        get_data_from_evm().await;
+        // Process data here
     });
 }
 
